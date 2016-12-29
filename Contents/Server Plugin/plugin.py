@@ -18,16 +18,16 @@ class Plugin(indigo.PluginBase):
 
     #---------------------------------------------------------------------------
     def deviceStartComm(self, device):
-        self.debugLog('Starting device: ' + device.name)
+        self.logger.debug('Starting device: ' + device.name)
         self._updateDevice(device)
 
     #---------------------------------------------------------------------------
     def deviceStopComm(self, device):
-        self.debugLog('Stopping device: ' + device.name)
+        self.logger.debug('Stopping device: ' + device.name)
 
     #---------------------------------------------------------------------------
     def getBatteryNameList(self, filter='', valuesDict=None, typeId='', targetId=0):
-        self.debugLog("getBatteryNameList valuesDict: %s" % str(valuesDict))
+        self.logger.debug("getBatteryNameList valuesDict: %s" % str(valuesDict))
         battNames = []
         batts = pmset.getBatteryInfo()
 
@@ -63,7 +63,7 @@ class Plugin(indigo.PluginBase):
     def _runLoopStep(self):
         # devices are updated when added, so we'll start with a sleep
         updateInterval = int(self.pluginPrefs.get('updateInterval', 5))
-        self.debugLog('Next update in %d minutes' % updateInterval)
+        self.logger.debug('Next update in %d minutes' % updateInterval)
 
         # sleep for the designated time (convert to seconds)
         self.sleep(updateInterval * 60)
@@ -76,32 +76,31 @@ class Plugin(indigo.PluginBase):
             if device.enabled:
                 self._updateDevice(device)
             else:
-                self.debugLog('Device disabled: %s' % device.name)
+                self.logger.debug('Device disabled: %s' % device.name)
 
     #---------------------------------------------------------------------------
     def _updateDevice(self, device):
-        self.debugLog('Update device: ' + device.name)
+        self.logger.debug('Update device: ' + device.name)
 
-        type = device.deviceTypeId
-        props = device.pluginProps
+        typeId = device.deviceTypeId
 
-        if type == 'PowerSupply':
+        if typeId == 'PowerSupply':
             self._updateDevice_PowerSupply(device)
-        elif type == 'Battery':
+        elif typeId == 'Battery':
             self._updateDevice_Battery(device)
 
     #---------------------------------------------------------------------------
     def _updateDevice_Battery(self, device):
         name = device.pluginProps['name']
-        self.debugLog('Updating battery: %s' % name)
+        self.logger.debug('Updating battery: %s' % name)
 
         batt = pmset.getBatteryInfo(name)
 
         if batt is None:
-            self.errorLog('Unknown battery: %s' % name)
+            self.logger.error('Unknown battery: %s' % name)
 
         else:
-            self.debugLog('Battery: %s [%s] - %s' % (batt.name, batt.level, batt.status))
+            self.logger.debug('Battery: %s [%s] - %s' % (batt.name, batt.level, batt.status))
             device.updateStateOnServer('level', batt.level)
             device.updateStateOnServer('status', batt.status)
             device.updateStateOnServer('displayStatus', '%d%%' % batt.level)
@@ -111,7 +110,7 @@ class Plugin(indigo.PluginBase):
     def _updateDevice_PowerSupply(self, device):
         power = pmset.getCurrentPowerInfo()
 
-        self.debugLog('Power source: %s [%s]' % (
+        self.logger.debug('Power source: %s [%s]' % (
             power.source, 'external' if power.isExternal else 'internal'
         ))
 
