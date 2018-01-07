@@ -3,7 +3,7 @@
   <SupportURL>https://github.com/jheddings/indigo-pmset</SupportURL>
 
   <Field type="menu" id="updateInterval" defaultValue="5">
-  <Label>Update Interval:</Label>
+    <Label>Update Interval:</Label>
     <List>
       <Option value="1">1 Minute</Option>
       <Option value="2">2 Minutes</Option>
@@ -17,7 +17,14 @@
 
   <Field id="separator1" type="separator" />
 
-  <Field type="checkbox" id="debug">
-    <Label>Enable debugging:</Label>
+  <Field id="logLevel" type="menu" defaultValue="20">
+    <Label>Event Logging Level:</Label>
+    <List>
+      <Option value="10">Debugging Messages</Option>
+      <Option value="20">Informational Messages</Option>
+      <Option value="30">Warning Messages</Option>
+      <Option value="40">Error Messages</Option>
+      <Option value="50">Critical Errors Only</Option>
+    </List>
   </Field>
 </PluginConfig>

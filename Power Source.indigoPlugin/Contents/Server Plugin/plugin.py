@@ -9,8 +9,7 @@ class Plugin(indigo.PluginBase):
     #---------------------------------------------------------------------------
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
-
-        self.debug = pluginPrefs.get('debug', False)
+        self._loadPluginPrefs(pluginPrefs)
 
     #---------------------------------------------------------------------------
     def __del__(self):
@@ -28,6 +27,7 @@ class Plugin(indigo.PluginBase):
     #---------------------------------------------------------------------------
     def getBatteryNameList(self, filter='', valuesDict=None, typeId='', targetId=0):
         self.logger.debug("getBatteryNameList valuesDict: %s" % str(valuesDict))
+
         battNames = []
         batts = pmset.getBatteryInfo()
 
@@ -45,11 +45,6 @@ class Plugin(indigo.PluginBase):
         self._updateAllDevices()
 
     #---------------------------------------------------------------------------
-    def toggleDebugging(self):
-        self.debug = not self.debug
-        self.pluginPrefs['debug'] = self.debug
-
-    #---------------------------------------------------------------------------
     def runConcurrentThread(self):
         try:
 
@@ -60,7 +55,21 @@ class Plugin(indigo.PluginBase):
             pass
 
     #---------------------------------------------------------------------------
+    def _loadPluginPrefs(self, values):
+        logLevelTxt = values.get('logLevel', None)
+
+        if logLevelTxt is None:
+            self.logLevel = 20
+        else:
+            logLevel = int(logLevelTxt)
+            self.logLevel = logLevel
+
+        self.indigo_log_handler.setLevel(self.logLevel)
+
+    #---------------------------------------------------------------------------
     def _runLoopStep(self):
+        # TODO pick updateInterval based on power failure
+
         # devices are updated when added, so we'll start with a sleep
         updateInterval = int(self.pluginPrefs.get('updateInterval', 5))
         self.logger.debug('Next update in %d minutes' % updateInterval)

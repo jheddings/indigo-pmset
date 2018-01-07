@@ -4,8 +4,4 @@
     <Name>Refresh Device Status</Name>
     <CallbackMethod>refreshDeviceStatus</CallbackMethod>
   </MenuItem>
-  <MenuItem id="toggleDebugging">
-    <Name>Toggle Debugging</Name>
-    <CallbackMethod>toggleDebugging</CallbackMethod>
-  </MenuItem>
 </MenuItems>
