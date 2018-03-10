@@ -4,7 +4,7 @@
 <plist version="1.0">
   <dict>
     <key>CFBundleDisplayName</key><string>Power Source</string>
-    <key>PluginVersion</key><string>0.2.1</string>
+    <key>PluginVersion</key><string>0.3.1</string>
     <key>CFBundleIdentifier</key><string>com.heddings.indigo.pmset</string>
     <key>ServerApiVersion</key><string>2.0</string>
     <key>CFBundleVersion</key><string>1.0.0</string>
@@ -13,7 +13,7 @@
     <array>
       <dict>
         <key>CFBundleURLName</key>
-        <string>https://github.com/jheddings/indigo-pmset</string>
+        <string>https://www.indigodomo.com/pluginstore/157/</string>
       </dict>
     </array>
   </dict>
