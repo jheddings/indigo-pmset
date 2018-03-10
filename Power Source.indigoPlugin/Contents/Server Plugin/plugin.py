@@ -3,6 +3,10 @@
 import time
 import pmset
 
+# TODO track state changes and only warn on transitions:
+# e.g. "battery level critical" -> "battery level normal"
+# e.g. "external power lost" -> "external power restored"
+
 ################################################################################
 class Plugin(indigo.PluginBase):
 
@@ -81,9 +85,8 @@ class Plugin(indigo.PluginBase):
 
         # TODO it would be nice if we could just use the information collected
         # during a device update; the issue would be that users won't always add
-        # the power supply to their list of devices - so we have to call it here
+        # all batteries to their list of devices - so we have to call it here
         batts = pmset.getBatteryInfo()
-        power = pmset.getCurrentPowerInfo()
 
         # XXX maybe we only care about critical device states if users add them?
 
@@ -92,12 +95,8 @@ class Plugin(indigo.PluginBase):
 
         for batt in batts:
             if batt.level <= critThresh:
-                self.logger.debug(u'Critical battery level: %s', batt.name)
+                self.logger.warn(u'Critical battery level: %s', batt.name)
                 isCritical = True
-
-        if not power.isExternal:
-            self.logger.debug(u'Critical power supply: %s', power.source)
-            isCritical = True
 
         interval = 0
 

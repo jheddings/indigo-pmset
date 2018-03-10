@@ -11,11 +11,10 @@ You can run the command `pmset -g batt` to see the data used by this plugin.
 Update intervals in the plugin config are used to define how frequently power information
 should be collected.
 
-The plugin will update device states depending on the current power status.  If the plugin
-determines that external power is on and all batteries are above a critical monitoring
-threshold, the "standard update interval" will be used.  If external power is down or any
+The plugin will update device states depending on the current power status.  If any
 batteries are below the critical threshold, the plugin will use the "critical update
-interval" to refresh device states.
+interval" to refresh device states.  Otherwise, the "standard update interval" will be
+used.
 
 ## Devices
 
