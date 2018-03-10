@@ -16,6 +16,13 @@
     <Label>(required) critical polling interval in minutes; sane values are 1-10</Label>
   </Field>
 
+  <Field id="critThreshold" type="textfield" defaultValue="20">
+    <Label>Critical Threshold:</Label>
+  </Field>
+  <Field id="critThresholdHelp" type="label" fontSize="mini" alignWithControl="true">
+    <Label>(required) the battery level before switching to critical monitoring; sane values are 10-30</Label>
+  </Field>
+
   <Field id="separator1" type="separator" />
 
   <Field id="logLevel" type="menu" defaultValue="20">

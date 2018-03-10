@@ -17,17 +17,15 @@ class Plugin(indigo.PluginBase):
 
     #---------------------------------------------------------------------------
     def deviceStartComm(self, device):
-        self.logger.debug('Starting device: ' + device.name)
+        self.logger.debug(u'Starting device: %s', device.name)
         self._updateDevice(device)
 
     #---------------------------------------------------------------------------
     def deviceStopComm(self, device):
-        self.logger.debug('Stopping device: ' + device.name)
+        self.logger.debug(u'Stopping device: %s', device.name)
 
     #---------------------------------------------------------------------------
     def getBatteryNameList(self, filter='', valuesDict=None, typeId='', targetId=0):
-        self.logger.debug("getBatteryNameList valuesDict: %s" % str(valuesDict))
-
         battNames = []
         batts = pmset.getBatteryInfo()
 
@@ -41,7 +39,7 @@ class Plugin(indigo.PluginBase):
 
     #---------------------------------------------------------------------------
     def refreshDeviceStatus(self):
-        indigo.server.log('Updating device status.')
+        self.logger.info(u'Updating all devices.')
         self._updateAllDevices()
 
     #---------------------------------------------------------------------------
@@ -70,7 +68,7 @@ class Plugin(indigo.PluginBase):
     def _runLoopStep(self):
         # devices are updated when added, so we'll start with a sleep
         updateInterval = self._getCurrentUpdateInterval();
-        self.logger.debug('Next update in %f minutes' % updateInterval)
+        self.logger.debug(u'Next update in %f minutes' % updateInterval)
 
         # sleep for the designated time (convert to seconds)
         self.sleep(updateInterval * 60)
@@ -79,20 +77,34 @@ class Plugin(indigo.PluginBase):
 
     #---------------------------------------------------------------------------
     def _getCurrentUpdateInterval(self):
-        # we allow floats in case users choose less than 1 minute for updates
-        interval = 0
+        isCritical = False
 
         # TODO it would be nice if we could just use the information collected
         # during a device update; the issue would be that users won't always add
         # the power supply to their list of devices - so we have to call it here
+        batts = pmset.getBatteryInfo()
         power = pmset.getCurrentPowerInfo()
 
-        if (power.isExternal):
-            self.logger.debug('power is on: using standard interval')
-            interval = float(self.pluginPrefs.get('stdUpdateInt', 5))
-        else:
-            self.logger.debug('power is out: using critical interval')
+        # XXX maybe we only care about critical device states if users add them?
+
+        # we allow floats in case users choose less than 1 minute for updates
+        critThresh = float(self.pluginPrefs.get('critThreshold', 20))
+
+        for batt in batts:
+            if batt.level <= critThresh:
+                self.logger.debug(u'Critical battery level: %s', batt.name)
+                isCritical = True
+
+        if not power.isExternal:
+            self.logger.debug(u'Critical power supply: %s', power.source)
+            isCritical = True
+
+        interval = 0
+
+        if isCritical:
             interval = float(self.pluginPrefs.get('critUpdateInt', 1))
+        else:
+            interval = float(self.pluginPrefs.get('stdUpdateInt', 5))
 
         return interval
 
@@ -102,11 +114,11 @@ class Plugin(indigo.PluginBase):
             if device.enabled:
                 self._updateDevice(device)
             else:
-                self.logger.debug('Device disabled: %s' % device.name)
+                self.logger.debug(u'Device disabled: %s', device.name)
 
     #---------------------------------------------------------------------------
     def _updateDevice(self, device):
-        self.logger.debug('Update device: ' + device.name)
+        self.logger.debug(u'Update device: %s', device.name)
 
         typeId = device.deviceTypeId
 
@@ -118,15 +130,16 @@ class Plugin(indigo.PluginBase):
     #---------------------------------------------------------------------------
     def _updateDevice_Battery(self, device):
         name = device.pluginProps['name']
-        self.logger.debug('Updating battery: %s' % name)
+        self.logger.debug(u'Updating battery: %s', name)
 
         batt = pmset.getBatteryInfo(name)
 
         if batt is None:
-            self.logger.error('Unknown battery: %s' % name)
+            self.logger.error(u'Unknown battery: %s', name)
 
         else:
-            self.logger.debug('Battery: %s [%s] - %s' % (batt.name, batt.level, batt.status))
+            self.logger.debug(u'Battery: %s, [%d] - %s', batt.name, batt.level, batt.status)
+
             device.updateStateOnServer('level', batt.level)
             device.updateStateOnServer('status', batt.status)
             device.updateStateOnServer('displayStatus', '%d%%' % batt.level)
@@ -136,9 +149,9 @@ class Plugin(indigo.PluginBase):
     def _updateDevice_PowerSupply(self, device):
         power = pmset.getCurrentPowerInfo()
 
-        self.logger.debug('Power source: %s [%s]' % (
-            power.source, 'external' if power.isExternal else 'internal'
-        ))
+        self.logger.debug(u'Power source: %s [%s]', power.source,
+            'external' if power.isExternal else 'internal'
+        )
 
         device.updateStateOnServer('source', power.source)
         device.updateStateOnServer('hasExternalPower', power.isExternal)
