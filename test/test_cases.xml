@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<TestCases>
+  <TestCase id="7" name="Laptop/UPS, AC, full">
+Now drawing from 'AC Power'
+ -InternalBattery-0	100%; charged; 0:00 remaining present: true
+ -UPS CP600	100%; charging present: true
+  </TestCase>
+
+  <TestCase id="8" name="Malformed Power Line">
+Now drawing from AC Power
+ -InternalBattery-0	100%; charged; 0:00 remaining present: true
+ -UPS CP600	100%; charging present: true
+  </TestCase>
+</TestCases>
