@@ -38,7 +38,6 @@ class Plugin(iplug.ThreadedPlugin):
     #---------------------------------------------------------------------------
     def loadPluginPrefs(self, prefs):
         iplug.ThreadedPlugin.loadPluginPrefs(self, prefs)
-
         self._updateLoopDelay()
 
     #---------------------------------------------------------------------------
@@ -65,25 +64,23 @@ class Plugin(iplug.ThreadedPlugin):
 
     #---------------------------------------------------------------------------
     def _getCurrentUpdateInterval(self):
-        # TODO it would be nice if we could just use the information collected
-        # during a device update; the issue would be that users won't always add
-        # all batteries to their list of devices - so we have to call it here
-        batts = pmset.getBatteryInfo()
-
-        # XXX maybe we only care about critical device states if users add them?
-
         # we allow floats in case users choose less than 1 minute for updates
         critThresh = self.getPrefAsFloat(self.pluginPrefs, 'critThreshold', 20)
 
         isCritical = False
 
-        for batt in batts:
-            if batt.level <= critThresh:
-                self.logger.warn(u'Critical battery level: %s [%f]', batt.name, batt.level)
+        # check the level for all configured batteries
+        for device in indigo.devices.itervalues('self.Battery'):
+            level = float(device.states.get('level'))
+
+            if (level <= critThresh):
+                self.logger.warn(u'Critical battery level: %s [%f]', device.name, level)
                 isCritical = True
 
+        # assume we use the standard delay interval...
         interval = self.getPrefAsFloat(self.pluginPrefs, 'stdUpdateInt', 5)
 
+        # ...unless we found a battery below the critical threshold
         if isCritical:
             interval = self.getPrefAsFloat(self.pluginPrefs, 'critUpdateInt', 1)
 
