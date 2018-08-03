@@ -3,21 +3,14 @@
 import time
 import pmset
 
+import iplug
+
 # TODO track state changes and only warn on transitions:
 # e.g. "battery level critical" -> "battery level normal"
 # e.g. "external power lost" -> "external power restored"
 
 ################################################################################
-class Plugin(indigo.PluginBase):
-
-    #---------------------------------------------------------------------------
-    def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
-        indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
-        self._loadPluginPrefs(pluginPrefs)
-
-    #---------------------------------------------------------------------------
-    def __del__(self):
-        indigo.PluginBase.__del__(self)
+class Plugin(iplug.ThreadedPlugin):
 
     #---------------------------------------------------------------------------
     def deviceStartComm(self, device):
@@ -47,42 +40,26 @@ class Plugin(indigo.PluginBase):
         self._updateAllDevices()
 
     #---------------------------------------------------------------------------
-    def runConcurrentThread(self):
-        try:
+    def loadPluginPrefs(self, prefs):
+        iplug.ThreadedPlugin.loadPluginPrefs(self, prefs)
 
-            while not self.stopThread:
-                self._runLoopStep()
-
-        except self.StopThread:
-            pass
+        self._updateLoopDelay()
 
     #---------------------------------------------------------------------------
-    def _loadPluginPrefs(self, values):
-        logLevelTxt = values.get('logLevel', None)
-
-        if logLevelTxt is None:
-            self.logLevel = 20
-        else:
-            logLevel = int(logLevelTxt)
-            self.logLevel = logLevel
-
-        self.indigo_log_handler.setLevel(self.logLevel)
-
-    #---------------------------------------------------------------------------
-    def _runLoopStep(self):
-        # devices are updated when added, so we'll start with a sleep
-        updateInterval = self._getCurrentUpdateInterval();
-        self.logger.debug(u'Next update in %f minutes' % updateInterval)
-
-        # sleep for the designated time (convert to seconds)
-        self.sleep(updateInterval * 60)
-
+    def runLoopStep(self):
         self._updateAllDevices()
+        self._updateLoopDelay()
+
+    #---------------------------------------------------------------------------
+    def _updateLoopDelay(self):
+        # this plugin configures the polling interval in minutes
+        interval = self._getCurrentUpdateInterval()
+
+        # iplug loop delay is in seconds...
+        self.threadLoopDelay = (60 * interval)
 
     #---------------------------------------------------------------------------
     def _getCurrentUpdateInterval(self):
-        isCritical = False
-
         # TODO it would be nice if we could just use the information collected
         # during a device update; the issue would be that users won't always add
         # all batteries to their list of devices - so we have to call it here
@@ -91,19 +68,19 @@ class Plugin(indigo.PluginBase):
         # XXX maybe we only care about critical device states if users add them?
 
         # we allow floats in case users choose less than 1 minute for updates
-        critThresh = float(self.pluginPrefs.get('critThreshold', 20))
+        critThresh = self.getPrefAsFloat(self.pluginPrefs, 'critThreshold', 20)
+
+        isCritical = False
 
         for batt in batts:
             if batt.level <= critThresh:
-                self.logger.warn(u'Critical battery level: %s', batt.name)
+                self.logger.warn(u'Critical battery level: %s [%f]', batt.name, batt.level)
                 isCritical = True
 
-        interval = 0
+        interval = self.getPrefAsFloat(self.pluginPrefs, 'stdUpdateInt', 5)
 
         if isCritical:
-            interval = float(self.pluginPrefs.get('critUpdateInt', 1))
-        else:
-            interval = float(self.pluginPrefs.get('stdUpdateInt', 5))
+            interval = self.getPrefAsFloat(self.pluginPrefs, 'critUpdateInt', 1)
 
         return interval
 
