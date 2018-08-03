@@ -13,10 +13,7 @@ re_hostname = re.compile('^(\w[\-\.]?)+$')
 re_macaddr = re.compile('^([0-9a-fA-F][0-9a-fA-F][:\-]){5}([0-9a-fA-F][0-9a-fA-F])$')
 
 ################################################################################
-class ThreadedPlugin(indigo.PluginBase):
-
-    # delay between loop steps, set by plugin config
-    threadLoopDelay = None
+class PluginBase(indigo.PluginBase):
 
     #---------------------------------------------------------------------------
     # NOTE: subclasses should invoke the base __init__ if overidden
@@ -73,15 +70,26 @@ class ThreadedPlugin(indigo.PluginBase):
         self.logLevel = self.getPrefAsInt(prefs, 'logLevel', 20)
         self.indigo_log_handler.setLevel(self.logLevel)
 
-        # save loop delay
-        self.threadLoopDelay = self.getPrefAsInt(prefs, 'threadLoopDelay', 60)
-
     #---------------------------------------------------------------------------
     # reload the plugin prefs whenever the config dialog is closed
     def closedPrefsConfigUi(self, prefs, canceled):
         if canceled: return
 
         self.loadPluginPrefs(prefs)
+
+################################################################################
+class ThreadedPlugin(PluginBase):
+
+    # delay between loop steps, set by plugin config
+    threadLoopDelay = None
+
+    #---------------------------------------------------------------------------
+    # NOTE: subclasses should invoke the base loadPluginPrefs if overidden
+    def loadPluginPrefs(self, prefs):
+        PluginBase.loadPluginPrefs(self, prefs)
+
+        # save loop delay
+        self.threadLoopDelay = self.getPrefAsInt(prefs, 'threadLoopDelay', 60)
 
     #---------------------------------------------------------------------------
     # perform the main work in the thread loop for the plugin. the timing of

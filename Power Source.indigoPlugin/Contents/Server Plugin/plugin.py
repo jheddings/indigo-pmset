@@ -5,9 +5,10 @@ import pmset
 
 import iplug
 
-# TODO track state changes and only warn on transitions:
+# TODO track state changes in device states and trigger on transitions:
 # e.g. "battery level critical" -> "battery level normal"
 # e.g. "external power lost" -> "external power restored"
+# -> maybe use this to log warning message, too (instead of on each loop)
 
 ################################################################################
 class Plugin(iplug.ThreadedPlugin):
