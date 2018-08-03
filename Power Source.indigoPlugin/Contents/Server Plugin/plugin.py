@@ -14,12 +14,8 @@ class Plugin(iplug.ThreadedPlugin):
 
     #---------------------------------------------------------------------------
     def deviceStartComm(self, device):
-        self.logger.debug(u'Starting device: %s', device.name)
+        iplug.ThreadedPlugin.deviceStartComm(self, device)
         self._updateDevice(device)
-
-    #---------------------------------------------------------------------------
-    def deviceStopComm(self, device):
-        self.logger.debug(u'Stopping device: %s', device.name)
 
     #---------------------------------------------------------------------------
     def getBatteryNameList(self, filter='', valuesDict=None, typeId='', targetId=0):
@@ -46,9 +42,18 @@ class Plugin(iplug.ThreadedPlugin):
         self._updateLoopDelay()
 
     #---------------------------------------------------------------------------
-    def runLoopStep(self):
-        self._updateAllDevices()
+    # all the work of this plugin is performed in the loop delay hooks
+    def runLoopStep(self): pass
+
+    #---------------------------------------------------------------------------
+    def preLoopDelayHook(self):
+        # update the loop delay before the thread sleeps
         self._updateLoopDelay()
+
+    #---------------------------------------------------------------------------
+    def postLoopDelayHook(self):
+        # we do our work after the sleep since deviceStartComm does an initial update
+        self._updateAllDevices()
 
     #---------------------------------------------------------------------------
     def _updateLoopDelay(self):
