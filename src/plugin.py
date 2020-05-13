@@ -119,6 +119,7 @@ class Plugin(iplug.ThreadedPlugin):
         else:
             self.logger.debug(u'Battery: %s, [%d] - %s', batt.name, batt.level, batt.status)
 
+            device.updateStateOnServer('batteryLevel', batt.level)
             device.updateStateOnServer('level', batt.level)
             device.updateStateOnServer('status', batt.status)
             device.updateStateOnServer('displayStatus', '%d%%' % batt.level)

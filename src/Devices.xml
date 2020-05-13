@@ -49,6 +49,8 @@
         <Label>Select Battery:</Label>
         <List class="self" method="getBatteryNameList" dynamicReload="true" />
       </Field>
+
+        <Field id="SupportsBatteryLevel" type="checkbox" defaultValue="true" hidden="true" />
     </ConfigUI>
 
     <States>
