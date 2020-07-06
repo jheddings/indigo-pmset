@@ -47,10 +47,10 @@
     <ConfigUI>
       <Field id="name" type="menu" defaultValue="">
         <Label>Select Battery:</Label>
-        <List class="self" method="getBatteryNameList" dynamicReload="true" />
+        <List class="self" method="getBatteryNameList" />
       </Field>
 
-        <Field id="SupportsBatteryLevel" type="checkbox" defaultValue="true" hidden="true" />
+      <Field id="SupportsBatteryLevel" type="checkbox" defaultValue="true" hidden="true" />
     </ConfigUI>
 
     <States>
